@@ -1,0 +1,22 @@
+﻿<Window x:Class="IREngineTestBed.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MainWindow" Height="350" Width="525">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Button x:Name="StartButton" Content="Start" Grid.Row="1" Margin="5" Height="25"
+                Click="StartButton_Click"/>
+        <Button x:Name="StopButton" Content="Stop" Grid.Row="1" Grid.Column="1" Margin="5" Height="25"
+                Click="StopButton_Click"/>
+
+        <ListBox x:Name="OutputLogList" Grid.Column="0" Margin="5"/>
+        <ListBox x:Name="ErrorLogList" Grid.Column="1" Margin="5"/>
+    </Grid>
+</Window>
