@@ -33,7 +33,6 @@ namespace IREngineTestBed
         {
             InitializeComponent();
 
-            var instance = IRE.Instance;
             _uiScheduler = TaskScheduler.FromCurrentSynchronizationContext();
         }
 

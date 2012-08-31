@@ -10,7 +10,7 @@ using System.Windows;
 [assembly: AssemblyTitle("IREngineTestBed")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("EPAM Systems")]
+[assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("IREngineTestBed")]
 [assembly: AssemblyCopyright("Copyright © Alexey S. Matveev")]
 [assembly: AssemblyTrademark("")]

@@ -9,7 +9,7 @@ using System.Resources;
 [assembly: AssemblyTitle("IREngine")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("EPAM Systems")]
+[assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("IREngine")]
 [assembly: AssemblyCopyright("Copyright © Alexey S. Matveev")]
 [assembly: AssemblyTrademark("")]

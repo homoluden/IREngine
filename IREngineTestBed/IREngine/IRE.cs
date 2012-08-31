@@ -311,17 +311,10 @@ namespace IREngine
             catch (Exception ex)
             {
                 WriteError(ex.Message);
+                return Guid.Empty;
             }
             
-            var action = new Action(() =>
-                                        {
-                                            
-                                            
-                                            if (compiledCode == null)
-                                                return;
-
-                                            compiledCode.Execute(scriptScope);
-                                        });
+            var action = new Action(() => compiledCode.Execute(scriptScope));
             var tokenSource = new CancellationTokenSource();
             var task = new Task(action, tokenSource.Token, TaskCreationOptions.LongRunning);
             var guid = Guid.NewGuid();
@@ -334,7 +327,7 @@ namespace IREngine
                                       if (t.Exception == null)
                                           return;
 
-                                      t.Exception.Handle((ex) =>
+                                      t.Exception.Flatten().Handle((ex) =>
                                                              {
                                                                  Instance.WriteError(t.Exception.InnerException.Message);
                                                                  return true;
