@@ -5,3 +5,9 @@ obj
 _ReSharper.IREngineTestBed
 # mstest test results
 TestResults
+
+#build output
+IREngineTestBed/build
+
+#.user files
+*.user
