@@ -5,9 +5,18 @@ using System.Text;
 
 namespace IRGame.Common.Enums
 {
-    public enum CharacterState
+    public enum StateVar
     {
         Initialized,
+        Orientation,
+        XPosition,
+        XVelocity,
+        XPosTarget,
+        XVelTarget,
+        YPosition,
+        YVelocity,
+        YPosTarget,
+        YVelTarget,
         XForce,
         XForceThresh,
         YForce,
@@ -15,6 +24,8 @@ namespace IRGame.Common.Enums
         XMoment,
         XMomentThresh,
         YMoment,
-        YMomentThresh
+        YMomentThresh,
+        TransitionMtx,
+        ControlMtx
     }
 }

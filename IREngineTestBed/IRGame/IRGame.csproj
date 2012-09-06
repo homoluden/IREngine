@@ -44,12 +44,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Characters\Character.cs" />
-    <Compile Include="Common\Enums\CharacterState.cs" />
+    <Compile Include="Common\Enums\StateVar.cs" />
     <Compile Include="Common\Helpers\CharacterHelper.cs" />
     <Compile Include="Common\GameObject.cs" />
     <Compile Include="Characters\Predator.cs" />
     <Compile Include="Characters\Prey.cs" />
     <Compile Include="Common\Helpers\StringHelper.cs" />
+    <Compile Include="Common\Vector2.cs" />
+    <Compile Include="Common\Vector4.cs" />
+    <Compile Include="Common\Vector8.cs" />
     <Compile Include="SimpleGame.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
