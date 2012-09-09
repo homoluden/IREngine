@@ -8,7 +8,7 @@ namespace IRGame.Common
     public class GameObject
     {
         public Guid Id { get; private set; }
-        protected ConcurrentDictionary<StateVar, object> State { get; set; }
+        public ConcurrentDictionary<StateVar, object> State { get; private set; }
 
         public GameObject()
         {

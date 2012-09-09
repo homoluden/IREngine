@@ -34,38 +34,43 @@ namespace IREngineTestBed
             InitializeComponent();
 
             _uiScheduler = TaskScheduler.FromCurrentSynchronizationContext();
+
+            IRE.Instance.OutputUpdated += (s, args) =>
+            {
+                string msg = string.Format("{0}", args.Data);
+                Debug.WriteLine(msg);
+
+                var uiUpdateTask = Task.Factory.StartNew(() =>
+                {
+                    OutputLogBox.AppendText(msg);
+                    OutputLogBox.ScrollToEnd();
+                },
+                                                        Task.Factory.CancellationToken,
+                                                        TaskCreationOptions.None,
+                                                        _uiScheduler);
+                uiUpdateTask.Wait();
+            };
+            IRE.Instance.ErrorUpdated += (s, args) =>
+            {
+                string msg = string.Format("{0}", args.Data);
+                Debug.WriteLine(msg);
+
+                var uiUpdateTask = Task.Factory.StartNew(() =>
+                {
+                    ErrorLogBox.AppendText(msg);
+                    ErrorLogBox.ScrollToEnd();
+                },
+                                                         Task.Factory.CancellationToken,
+                                                         TaskCreationOptions.None,
+                                                         _uiScheduler);
+                uiUpdateTask.Wait();
+            };
+
         }
 
         private void StartButton_Click(object sender, RoutedEventArgs e)
         {
-            IRE.Instance.OutputUpdated += (s, args) =>
-                                              {
-                                                  string msg = string.Format("***\tIRE >> Out Updated callback\t***\nResult: {0}\n***\tEND\t***\n",args.Data);
-                                                  Debug.WriteLine(msg);
-
-                                                  var uiUpdateTask = Task.Factory.StartNew(() =>
-                                                                                              {
-                                                                                                  OutputLogList.Items.Add(msg);
-                                                                                              },
-                                                                                          Task.Factory.CancellationToken,
-                                                                                          TaskCreationOptions.None,
-                                                                                          _uiScheduler);
-                                                  uiUpdateTask.Wait();
-                                              };
-            IRE.Instance.ErrorUpdated += (s, args) =>
-                                             {
-                                                 string msg = string.Format("!!!\tIRE >> Err Updated callback\t!!!\nResult: {0}\n!!!\tEND\t!!!\n", args.Data);
-                                                 Debug.WriteLine(msg);
-                                                 
-                                                 var uiUpdateTask = Task.Factory.StartNew(() =>
-                                                                                              {
-                                                                                                  ErrorLogList.Items.Add(msg);
-                                                                                              },
-                                                                                          Task.Factory.CancellationToken,
-                                                                                          TaskCreationOptions.None,
-                                                                                          _uiScheduler);
-                                                 uiUpdateTask.Wait();
-                                             };
+            
             IRE.Instance.StartWatching();
 
             RunExample();
@@ -74,7 +79,7 @@ namespace IREngineTestBed
         private void RunExample()
         {
             string code = string.Empty;
-            using (var reader = File.OpenText(@"scripts\example.rb"))
+            using (var reader = File.OpenText(@"scripts\game\character_test.rb"))
             {
                 code = reader.ReadToEnd();                
             }

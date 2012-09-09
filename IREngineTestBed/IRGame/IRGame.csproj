@@ -60,13 +60,15 @@
     <Content Include="scripts\game\character.rb">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="scripts\game\character_test.rb">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy "$(ProjectDir)bin\Release" "$(SolutionDir)\build\" /s /i /y
-
-xcopy "$(ProjectDir)scripts\game" "$(SolutionDir)\build\scripts\game\" /s /i /y</PostBuildEvent>
+    <PostBuildEvent>xcopy "$(ProjectDir)bin\$(Configuration)" "$(SolutionDir)build\$(Configuration)" /s /i /y /d
+xcopy "$(ProjectDir)scripts\game" "$(SolutionDir)build\$(Configuration)\scripts\game" /s /i /y /d</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

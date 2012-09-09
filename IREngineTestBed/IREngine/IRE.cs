@@ -38,9 +38,14 @@ namespace IREngine
 
         private IRE()
         {
+            _instanceId = Guid.NewGuid();
             _defaultEngine = Ruby.CreateEngine((setup) => {
                 setup.ExceptionDetail = true;
             });
+            
+            var paths = (new[] { Environment.CurrentDirectory, Environment.CurrentDirectory + @"\scripts"});
+            paths.ToList().AddRange(_defaultEngine.GetSearchPaths());
+            _defaultEngine.SetSearchPaths(paths);
             _defaultEngine.Runtime.LoadAssembly(typeof(IRE).Assembly);
 
             _outStream = new MemoryStream();
@@ -57,17 +62,17 @@ namespace IREngine
                                       int i = 0;
                                       while (IsConsoleOutputWatchingEnabled)
                                       {
-                                          string msg = string.Format("***\t_outWatchTask >> tick ({0})\t***", i++);
-                                          Debug.WriteLine(msg);
-                                          WriteMessage(msg);
+                                          //string msg = string.Format("..._outWatchTask >> tick ({0})...", i++);
+                                          //Debug.WriteLine(msg);
+                                          //WriteMessage(msg);
                                           
                                           Task.Factory.CancellationToken.ThrowIfCancellationRequested();
 
-                                          int currentLength = OutputBuilder.Length;
+                                          int currentLength = _outStringBuilder.Length;
                                           if (OutputUpdated != null && currentLength != _lastOutSize)
                                           {
                                               OutputUpdated.Invoke(_outWatchTask,
-                                                                   new StringEventArgs(OutputBuilder.
+                                                                   new StringEventArgs(_outStringBuilder.
                                                                                            ToString(_lastOutSize,
                                                                                                     currentLength - _lastOutSize)));
 
@@ -91,17 +96,17 @@ namespace IREngine
                                       int i = 0;
                                       while (IsConsoleErrorWatchingEnabled)
                                       {
-                                          string msg = string.Format("***\t_errWatchTask >> tick ({0})\t***", i++);
-                                          Debug.WriteLine(msg);
-                                          WriteError(msg);
+                                          //string msg = string.Format("***\t_errWatchTask >> tick ({0})\t***", i++);
+                                          //Debug.WriteLine(msg);
+                                          //WriteError(msg);
 
                                           Task.Factory.CancellationToken.ThrowIfCancellationRequested();
 
-                                          int currentLength = ErrorBuilder.Length;
+                                          int currentLength = _errStringBuilder.Length;
                                           if (ErrorUpdated != null && currentLength != _lastErrSize)
                                           {
                                                 ErrorUpdated.Invoke(_errWatchTask,
-                                                                    new StringEventArgs(ErrorBuilder.
+                                                                    new StringEventArgs(_errStringBuilder.
                                                                                         ToString(_lastErrSize, currentLength - _lastErrSize)));
                                               
                                               _lastErrSize = currentLength;
@@ -250,6 +255,7 @@ namespace IREngine
 
         public event EventHandler<StringEventArgs> OutputUpdated;
         public event EventHandler<StringEventArgs> ErrorUpdated;
+        private Guid _instanceId;
 
         #endregion
 
@@ -300,6 +306,8 @@ namespace IREngine
         public Guid RunScriptAsync(string code)
         {
             var scriptScope = _defaultEngine.CreateScope();
+            scriptScope.SetVariable("logger", IRE.Instance);
+            
             CompiledCode compiledCode = null;
             try
             {

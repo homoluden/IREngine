@@ -1,10 +1,14 @@
 ﻿using IRGame.Common;
 using IRGame.Common.Enums;
+using System.Text;
 
 namespace IRGame.Characters
 {
     public class Character : GameObject
-    {       
+    {
+        #region Fields
+        private object _statePrintLock = new object();
+        #endregion
         #region Ctors
 
         public Character()
@@ -16,6 +20,30 @@ namespace IRGame.Characters
         #endregion
 
         #region Public Methods
+
+        public void SetPosition(double x, double y)
+        {
+            State[StateVar.XPosition] = x;
+            State[StateVar.YPosition] = y;
+        }
+        public void SetVelocity(double x, double y)
+        {
+            State[StateVar.XVelocity] = x;
+            State[StateVar.YVelocity] = y;
+        }
+
+        public void SetPosition(Vector2 position)
+        {
+            SetPosition(position.X, position.Y);
+        }
+        public void SetVelocity(Vector2 velocity)
+        {
+            SetVelocity(velocity.X, velocity.Y);
+        }
+        public void SetOrientation(double angle)
+        {
+            State[StateVar.Orientation] = angle;
+        }
 
         public Vector2 GetPosition()
         {
@@ -36,13 +64,13 @@ namespace IRGame.Characters
         }
         public void ApplyForce(double fx, double fy)
         {
-            double fx0 = (double)State[StateVar.XForce];
-            double fy0 = (double)State[StateVar.YForce];
+            double fx0 = (double)State.GetOrAdd(StateVar.XForce, 0.0);
+            double fy0 = (double)State.GetOrAdd(StateVar.YForce, 0.0);
             
-            State[StateVar.XForce] = fx;
-            State[StateVar.XForceGrad] = fx - fx0;
-            State[StateVar.YForce] = fy;
-            State[StateVar.YForceGrad] = fy - fy0;
+            State.AddOrUpdate(StateVar.XForce, fx, (k, v) => fx);
+            State.AddOrUpdate(StateVar.XForceGrad, fx - fx0, (k, v) => fx - fx0);
+            State.AddOrUpdate(StateVar.XForce, fy, (k, v) => fy);
+            State.AddOrUpdate(StateVar.YForceGrad, fy - fy0, (k, v) => fy - fy0);
         }
         
         public void ApplyMoment(Vector2 moment)
@@ -87,6 +115,19 @@ namespace IRGame.Characters
             State[StateVar.YControlMtx] = yMtxElements;
         }
 
+        public string StateToString()
+        {
+            // TODO: wrap all operations with State dictionary to lock
+            var builder = new StringBuilder();
+            lock (_statePrintLock)
+            {
+                foreach (var key in State.Keys)
+                {
+                    builder.AppendFormat("{0} => {1}\n", key, State[key]);
+                }
+            }
+            return builder.ToString();
+        }
         #endregion
     }
 }

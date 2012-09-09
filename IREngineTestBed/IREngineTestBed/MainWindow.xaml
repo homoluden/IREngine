@@ -16,7 +16,9 @@
         <Button x:Name="StopButton" Content="Stop" Grid.Row="1" Grid.Column="1" Margin="5" Height="25"
                 Click="StopButton_Click"/>
 
-        <ListBox x:Name="OutputLogList" Grid.Column="0" Margin="5"/>
-        <ListBox x:Name="ErrorLogList" Grid.Column="1" Margin="5"/>
+        <RichTextBox x:Name="OutputLogBox" Grid.Column="0" Margin="5"
+                     VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Recycling"/>
+        <RichTextBox x:Name="ErrorLogBox" Grid.Column="1" Margin="5"/>
+        <GridSplitter Grid.Column="1" Grid.RowSpan="2" Margin="-2.5 0 0 0" Width="5" HorizontalAlignment="Left" VerticalAlignment="Stretch"/>
     </Grid>
 </Window>
