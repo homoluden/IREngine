@@ -7,6 +7,8 @@ namespace IRGame.Common.Enums
 {
     public enum StateVar
     {
+        TimeSample,
+        TimeRemainder,
         Initialized,
         Orientation,
         XPosition,
@@ -18,14 +20,18 @@ namespace IRGame.Common.Enums
         YPosTarget,
         YVelTarget,
         XForce,
+        XForceGrad,
         XForceThresh,
         YForce,
+        YForceGrad,
         YForceThresh,
         XMoment,
         XMomentThresh,
         YMoment,
         YMomentThresh,
-        TransitionMtx,
-        ControlMtx
+        XTransitionMtx,
+        XControlMtx,
+        YTransitionMtx,
+        YControlMtx
     }
 }

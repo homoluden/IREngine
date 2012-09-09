@@ -36,8 +36,13 @@ namespace IRGame.Characters
         }
         public void ApplyForce(double fx, double fy)
         {
+            double fx0 = (double)State[StateVar.XForce];
+            double fy0 = (double)State[StateVar.YForce];
+            
             State[StateVar.XForce] = fx;
+            State[StateVar.XForceGrad] = fx - fx0;
             State[StateVar.YForce] = fy;
+            State[StateVar.YForceGrad] = fy - fy0;
         }
         
         public void ApplyMoment(Vector2 moment)
@@ -70,14 +75,16 @@ namespace IRGame.Characters
             State[StateVar.YVelTarget] = yTarget;
         }
 
-        public void SetTransitionMatrix(Vector4 vector)
+        public void SetTransitionMatrix(Vector4 xMtxElements, Vector4 yMtxElements)
         {
-            State[StateVar.TransitionMtx] = vector;
+            State[StateVar.XTransitionMtx] = xMtxElements;
+            State[StateVar.YTransitionMtx] = yMtxElements;
         }
 
-        public void SetControlMatrix(Vector8 vector)
+        public void SetControlMatrix(Vector8 xMtxElements, Vector8 yMtxElements)
         {
-            State[StateVar.ControlMtx] = vector;
+            State[StateVar.XControlMtx] = xMtxElements;
+            State[StateVar.YControlMtx] = yMtxElements;
         }
 
         #endregion
