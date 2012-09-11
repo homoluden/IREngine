@@ -9,6 +9,7 @@ namespace IRGame.Characters
         #region Fields
         private object _statePrintLock = new object();
         #endregion
+
         #region Ctors
 
         public Character()

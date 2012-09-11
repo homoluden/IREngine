@@ -42,12 +42,16 @@ namespace IREngineTestBed
 
                 var uiUpdateTask = Task.Factory.StartNew(() =>
                 {
-                    OutputLogBox.AppendText(msg);
-                    OutputLogBox.ScrollToEnd();
+                    foreach (var str in msg.Split("\n\r".ToCharArray(), StringSplitOptions.RemoveEmptyEntries))
+                    {
+                        var trimmed = str.Trim();
+                        OutputLogBox.Items.Add(trimmed);
+                        OutputLogBox.ScrollIntoView(trimmed);
+                    }
                 },
-                                                        Task.Factory.CancellationToken,
-                                                        TaskCreationOptions.None,
-                                                        _uiScheduler);
+                    Task.Factory.CancellationToken,
+                    TaskCreationOptions.None,
+                    _uiScheduler);
                 uiUpdateTask.Wait();
             };
             IRE.Instance.ErrorUpdated += (s, args) =>
@@ -57,12 +61,16 @@ namespace IREngineTestBed
 
                 var uiUpdateTask = Task.Factory.StartNew(() =>
                 {
-                    ErrorLogBox.AppendText(msg);
-                    ErrorLogBox.ScrollToEnd();
+                    foreach (var str in msg.Split("\n\r".ToCharArray(), StringSplitOptions.RemoveEmptyEntries))
+                    {
+                        var trimmed = str.Trim();
+                        ErrorLogBox.Items.Add(trimmed);
+                        ErrorLogBox.ScrollIntoView(trimmed);
+                    }
                 },
-                                                         Task.Factory.CancellationToken,
-                                                         TaskCreationOptions.None,
-                                                         _uiScheduler);
+                    Task.Factory.CancellationToken,
+                    TaskCreationOptions.None,
+                    _uiScheduler);
                 uiUpdateTask.Wait();
             };
 
