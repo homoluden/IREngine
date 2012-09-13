@@ -94,26 +94,22 @@ namespace IRGame.Characters
             State[StateVar.YPosTarget] = yTarget;
         }
         
-        public void SetTargetVelocity(Vector2 target)
-        {
-            SetTargetVelocity(target.X, target.Y);
-        }
-        public void SetTargetVelocity(double xTarget, double yTarget)
-        {
-            State[StateVar.XVelTarget] = xTarget;
-            State[StateVar.YVelTarget] = yTarget;
-        }
-
         public void SetTransitionMatrix(Vector4 xMtxElements, Vector4 yMtxElements)
         {
             State[StateVar.XTransitionMtx] = xMtxElements;
             State[StateVar.YTransitionMtx] = yMtxElements;
         }
 
-        public void SetControlMatrix(Vector8 xMtxElements, Vector8 yMtxElements)
+        public void SetControlMatrix(Vector2 xMtxElements, Vector2 yMtxElements)
         {
             State[StateVar.XControlMtx] = xMtxElements;
             State[StateVar.YControlMtx] = yMtxElements;
+        }
+
+        public void SetMeasureMatrix(Vector2 xMtxElements, Vector2 yMtxElements)
+        {
+            State[StateVar.XMeasureMtx] = xMtxElements;
+            State[StateVar.YMeasureMtx] = yMtxElements;
         }
 
         public string StateToString()

@@ -11,14 +11,14 @@ namespace IRGame.Common.Enums
         TimeRemainder,
         Initialized,
         Orientation,
+        XPhaseVector,
         XPosition,
         XVelocity,
         XPosTarget,
-        XVelTarget,
+        YPhaseVector,
         YPosition,
         YVelocity,
         YPosTarget,
-        YVelTarget,
         XForce,
         XForceGrad,
         XForceThresh,
@@ -31,7 +31,13 @@ namespace IRGame.Common.Enums
         YMomentThresh,
         XTransitionMtx,
         XControlMtx,
+        XMeasureMtx,
         YTransitionMtx,
-        YControlMtx
+        YControlMtx,
+        YMeasureMtx,
+        XPosStiff,
+        YPosStiff,
+        LastUx,
+        LastUy
     }
 }

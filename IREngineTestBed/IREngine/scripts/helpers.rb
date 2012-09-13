@@ -6,7 +6,7 @@ def require_relative path
     require "#{File.expand_path(File.dirname(__FILE__))}/#{path}"
 end
 
-$verbose = false
+$verbose = true
 
 require "IREngine.dll"
 require "IRGame.dll"
@@ -42,5 +42,8 @@ end
 class Vector2
     def angle
         Vector2Ex.angle self
+    end
+    def to_s
+        "{#{x}; #{y}}"
     end
 end

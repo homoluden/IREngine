@@ -27,9 +27,9 @@
                         <ColumnDefinition />
                     </Grid.ColumnDefinitions>
                     <ListBox x:Name="OutputLogBox" Grid.Column="0" Margin="5" 
-                             SelectionMode="Single" VirtualizingStackPanel.IsVirtualizing="False" VirtualizingStackPanel.VirtualizationMode="Standard"/>
+                             SelectionMode="Single" VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Standard"/>
                     <ListBox x:Name="ErrorLogBox" Grid.Column="1" Margin="5"
-                             SelectionMode="Single" VirtualizingStackPanel.IsVirtualizing="False" VirtualizingStackPanel.VirtualizationMode="Standard"/>
+                             SelectionMode="Single" VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Standard"/>
                     <GridSplitter Grid.Column="1" Grid.RowSpan="2" Margin="-2.5 0 0 0" Width="5" HorizontalAlignment="Left" VerticalAlignment="Stretch"/>
                 </Grid>
             </TabItem>
