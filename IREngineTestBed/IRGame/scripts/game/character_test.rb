@@ -8,14 +8,14 @@ IRE.log $:.to_s if $verbose
 
 require_relative "game/character"
 
-ts = 0.001
-ch = Character.build_discrete_model [0.1, 0.5, 1.0], [0.1, 0.5, 1.0], [0.01, 0.1], [0.01, 0.1], ts
+ts = 0.0025
+ch = Character.build_discrete_model [0.1, 1.5, 1.0], [0.1, 1.5, 1.0], [0.01, 0.1], [0.01, 0.1], ts
 IRE.log ch.print
 
 ch.set_target_position 1.5, 3.0
 
-10000.times{|i|
+50000.times{|i|
     Character.update(ch.state, ts)
     IRE.log "Time: #{i*ts}\n#{ch.print}"
-    sleep ts
+    sleep 0.0
 }

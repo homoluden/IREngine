@@ -4,8 +4,9 @@
         Title="MainWindow" Height="350" Width="525">
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition />
-            <ColumnDefinition />
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="2*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition />
@@ -13,10 +14,13 @@
         </Grid.RowDefinitions>
         <Button x:Name="StartButton" Content="Start" Grid.Row="1" Margin="5" Height="25"
                 Click="StartButton_Click"/>
-        <Button x:Name="StopButton" Content="Stop" Grid.Row="1" Grid.Column="1" Margin="5" Height="25"
+        <CheckBox x:Name="TimerWatcherSelector" Content="Update by Timer" 
+                  Grid.Row="1" Grid.Column="1" IsThreeState="False" VerticalAlignment="Center"
+                  Checked="TimerWatcherSelector_Checked" Unchecked="TimerWatcherSelector_Unchecked"/>
+        <Button x:Name="StopButton" Content="Stop" Grid.Row="1" Grid.Column="2" Margin="5" Height="25"
                 Click="StopButton_Click"/>
 
-        <TabControl x:Name="MainTabControl" Grid.ColumnSpan="2" TabStripPlacement="Right">
+        <TabControl x:Name="MainTabControl" Grid.ColumnSpan="3" TabStripPlacement="Right">
             <TabItem Header="Screen">
                 
             </TabItem>

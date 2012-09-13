@@ -10,17 +10,18 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using Microsoft.Scripting.Runtime;
+using System.Collections.Concurrent;
 
 namespace IREngine
 {
-    public class StringEventArgs : EventArgs
+    public class LogDiffEventArgs : EventArgs
     {
-        public StringEventArgs(string data)
+        public LogDiffEventArgs(IEnumerable<string> addedLines)
         {
-            Data = data;
+            AddedLines = addedLines;
         }
-    
-        public  string Data { get; set; }
+
+        public IEnumerable<string> AddedLines { get; set; }
     }
 
     public struct TaskRecord 
@@ -38,6 +39,8 @@ namespace IREngine
 
         private IRE()
         {
+            LogsTailLength = 500;
+            
             _instanceId = Guid.NewGuid();
             _defaultEngine = Ruby.CreateEngine((setup) => {
                 setup.ExceptionDetail = true;
@@ -49,32 +52,23 @@ namespace IREngine
             _defaultEngine.Runtime.LoadAssembly(typeof(IRE).Assembly);
 
             _outStream = new MemoryStream();
-            _outStringBuilder = new StringBuilder();
 
             _errStream = new MemoryStream();
-            _errStringBuilder = new StringBuilder();
 
             _defaultEngine.Runtime.IO.SetOutput(_outStream, Encoding.UTF8);
             _defaultEngine.Runtime.IO.SetErrorOutput(_errStream, Encoding.UTF8);
 
             _outWatchAction = () =>
                                   {
-                                      int i = 0;
                                       while (IsConsoleOutputWatchingEnabled)
                                       {
-                                          //string msg = string.Format("..._outWatchTask >> tick ({0})...", i++);
-                                          //Debug.WriteLine(msg);
-                                          //WriteMessage(msg);
-                                          
                                           Task.Factory.CancellationToken.ThrowIfCancellationRequested();
 
-                                          int currentLength = _outStringBuilder.Length;
+                                          int currentLength = _outputLog.Count;
                                           if (OutputUpdated != null && currentLength != _lastOutSize)
                                           {
                                               OutputUpdated.Invoke(_outWatchTask,
-                                                                   new StringEventArgs(_outStringBuilder.
-                                                                                           ToString(_lastOutSize,
-                                                                                                    currentLength - _lastOutSize)));
+                                                                   new LogDiffEventArgs(_outputLog.Reverse().Take(currentLength - _lastOutSize).Reverse()));
 
                                               _lastOutSize = currentLength;
                                           }
@@ -93,21 +87,15 @@ namespace IREngine
                                       };
             _errWatchAction = () =>
                                   {
-                                      int i = 0;
                                       while (IsConsoleErrorWatchingEnabled)
                                       {
-                                          //string msg = string.Format("***\t_errWatchTask >> tick ({0})\t***", i++);
-                                          //Debug.WriteLine(msg);
-                                          //WriteError(msg);
-
                                           Task.Factory.CancellationToken.ThrowIfCancellationRequested();
 
-                                          int currentLength = _errStringBuilder.Length;
+                                          int currentLength = _errorLog.Count;
                                           if (ErrorUpdated != null && currentLength != _lastErrSize)
                                           {
                                                 ErrorUpdated.Invoke(_errWatchTask,
-                                                                    new StringEventArgs(_errStringBuilder.
-                                                                                        ToString(_lastErrSize, currentLength - _lastErrSize)));
+                                                                    new LogDiffEventArgs(_errorLog.Reverse().Take(currentLength - _lastOutSize).Reverse()));
                                               
                                               _lastErrSize = currentLength;
                                           }
@@ -171,8 +159,9 @@ namespace IREngine
         private Task _errWatchTask;
         private readonly CancellationTokenSource _errWatchTaskToken = new CancellationTokenSource();
         private int _lastErrSize = 0;
-        private readonly StringBuilder _outStringBuilder;
-        private readonly StringBuilder _errStringBuilder;
+
+        private readonly ConcurrentQueue<string> _outputLog = new ConcurrentQueue<string>();
+        private readonly ConcurrentQueue<string> _errorLog = new ConcurrentQueue<string>();
 
         private readonly Action _outWatchAction;
         private readonly Action<Task> _outWatchExcHandler;
@@ -183,6 +172,8 @@ namespace IREngine
         #endregion
 
         #region Properties
+
+        public int LogsTailLength { get; set; }
 
         public ScriptEngine DefaultEngine
         {
@@ -195,25 +186,19 @@ namespace IREngine
             }
         }
 
-        public StringBuilder OutputBuilder
+        public IEnumerable<string> OutLogTail
         {
             get
             {
-                lock (SyncRoot)
-                {
-                    return _outStringBuilder;
-                }
+                return _outputLog.Reverse().Take(LogsTailLength).Reverse();
             }
         }
 
-        public StringBuilder ErrorBuilder
+        public IEnumerable<string> ErrLogTail
         {
             get
             {
-                lock (SyncRoot)
-                {
-                    return _errStringBuilder;
-                }
+                return _errorLog.Reverse().Take(LogsTailLength).Reverse();
             }
         }
 
@@ -221,17 +206,11 @@ namespace IREngine
         {
             get
             {
-                lock (SyncRoot)
-                {
-                    return _outWatchEnabled;
-                }
+                return _outWatchEnabled;
             }
             set
             {
-                lock (SyncRoot)
-                {
-                    _outWatchEnabled = value;
-                }
+                _outWatchEnabled = value;
             }
         }
 
@@ -239,22 +218,16 @@ namespace IREngine
         {
             get
             {
-                lock (SyncRoot)
-                {
-                    return _errWatchEnabled;
-                }
+                return _errWatchEnabled;
             }
             set
             {
-                lock (SyncRoot)
-                {
-                    _errWatchEnabled = value;
-                }
+                _errWatchEnabled = value;
             }
         }
 
-        public event EventHandler<StringEventArgs> OutputUpdated;
-        public event EventHandler<StringEventArgs> ErrorUpdated;
+        public event EventHandler<LogDiffEventArgs> OutputUpdated;
+        public event EventHandler<LogDiffEventArgs> ErrorUpdated;
         private Guid _instanceId;
 
         #endregion
@@ -267,17 +240,27 @@ namespace IREngine
 
         public void WriteMessage(string text)
         {
-            lock (SyncRoot)
+            if (string.IsNullOrWhiteSpace(text))
             {
-                _outStringBuilder.AppendLine(text);
+                return;
+            }
+            
+            foreach (var line in text.Split("\n\r".ToCharArray(), StringSplitOptions.RemoveEmptyEntries))
+            {
+                _outputLog.Enqueue(line);
             }
         }
 
         public void WriteError(string text)
         {
-            lock (SyncRoot)
+            if (string.IsNullOrWhiteSpace(text))
             {
-                _errStringBuilder.AppendLine(text);
+                return;
+            }
+            
+            foreach (var line in text.Split("\n\r".ToCharArray(), StringSplitOptions.RemoveEmptyEntries))
+            {
+                _errorLog.Enqueue(line);
             }
         }
 
