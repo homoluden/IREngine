@@ -6,7 +6,7 @@ def require_relative path
     require "#{File.expand_path(File.dirname(__FILE__))}/#{path}"
 end
 
-$verbose = true
+$verbose = false
 
 require "IREngine.dll"
 require "IRGame.dll"

@@ -89,6 +89,8 @@ class Character
         ts = state[StateVar.TimeSample]
         x_stiff, y_stiff = state[StateVar.XPosStiff], state[StateVar.YPosStiff]
         x, y = state[StateVar.XPhaseVector], state[StateVar.YPhaseVector]
+        IRE.log "Recieved phase vectors:\nx: #{x.inspect}\ny: #{y.inspect}\n" if $verbose
+        
         px, py, tx, ty = state[StateVar.XPosition], state[StateVar.YPosition], state[StateVar.XPosTarget], state[StateVar.YPosTarget]
         IRE.log "Position vars recieved" if $verbose
         
@@ -112,8 +114,8 @@ class Character
         ux = fx + x_stiff * (tx - px)
         state[StateVar.LastUx] = ux
         
-        x0 += bx.x * x.x
-        x1 += bx.y * x.y
+        x0 += bx.x * ux
+        x1 += bx.y * ux
         new_phase = Vector2.new
         new_phase.x, new_phase.y = x0, x1
         
@@ -131,8 +133,8 @@ class Character
         uy = fy + y_stiff * (ty - y.x)
         state[StateVar.LastUy] = uy
         
-        y0 += by.x * y.x
-        y1 += by.y * y.y
+        y0 += by.x * uy
+        y1 += by.y * uy
         new_phase = Vector2.new
         new_phase.x, new_phase.y = y0, y1
         
