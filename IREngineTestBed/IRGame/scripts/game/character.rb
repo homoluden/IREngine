@@ -121,8 +121,9 @@ class Character
         
         state[StateVar.XPhaseVector] = new_phase
         
-        pos = state[StateVar.XPosition] = cx.x * x0 + cx.y * x1
-        vx = state[StateVar.XVelocity] = (pos - px)/ts
+        dpx = cx.x * x0 + cx.y * x1
+        pos = state[StateVar.XPosition] = state[StateVar.XPosition] + dpx
+        vx = state[StateVar.XVelocity] = dpx/ts
         
         a1, a2, a3, a4 = ay.v1, ay.v2, ay.v3, ay.v4        
         y0 = a1*y.x + a2*y.y
@@ -130,7 +131,7 @@ class Character
         
         fy = 0.0 if fy < fyt
         
-        uy = fy + y_stiff * (ty - y.x)
+        uy = fy + y_stiff * (ty - py)
         state[StateVar.LastUy] = uy
         
         y0 += by.x * uy
@@ -140,8 +141,9 @@ class Character
         
         state[StateVar.YPhaseVector] = new_phase
         
-        pos = state[StateVar.YPosition] = cy.x * y0 + cy.y * y1
-        vy = state[StateVar.YVelocity] = (pos - py)/ts
+        dpy = cy.x * y0 + cy.y * y1
+        pos = state[StateVar.YPosition] = state[StateVar.YPosition] + dpy
+        vy = state[StateVar.YVelocity] = dpy/ts
         
         vel = Vector2.new
         vel.x, vel.y = vx, vy
