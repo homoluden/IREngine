@@ -9,7 +9,7 @@ IRE.log $:.to_s if $verbose
 require_relative "game/character"
 
 ts = 0.001
-ch = Character.build_discrete_model [0.001, 0.25, 1.0], [0.001, 0.25, 1.0], [0.0, 1.0], [0.0, 1.0], ts
+ch = Character.build_discrete_model [0.01, 0.5, 1.0], [0.01, 0.5, 1.0], [1.0, 1.0], [1.0, 1.0], ts
 IRE.log ch.print
 
 ch.set_target_position 1.5, 3.0

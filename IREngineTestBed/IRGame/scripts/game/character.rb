@@ -28,7 +28,7 @@ class Character
                      (t1*ts-t3)/t1]
         
         c = Vector2.new
-        c.x, c.y = [b1, b2]
+        c.x, c.y = [b1/ts, b2/ts]
         
         [a, b, c]
     end
