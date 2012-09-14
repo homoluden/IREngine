@@ -39,9 +39,8 @@ namespace IREngine
 
         private IRE()
         {
-            LogsTailLength = 500;
+            LogsTailLength = 1000;
             
-            _instanceId = Guid.NewGuid();
             _defaultEngine = Ruby.CreateEngine((setup) => {
                 setup.ExceptionDetail = true;
             });
@@ -57,63 +56,6 @@ namespace IREngine
 
             _defaultEngine.Runtime.IO.SetOutput(_outStream, Encoding.UTF8);
             _defaultEngine.Runtime.IO.SetErrorOutput(_errStream, Encoding.UTF8);
-
-            _outWatchAction = () =>
-                                  {
-                                      while (IsConsoleOutputWatchingEnabled)
-                                      {
-                                          Task.Factory.CancellationToken.ThrowIfCancellationRequested();
-
-                                          int currentLength = _outputLog.Count;
-                                          if (OutputUpdated != null && currentLength != _lastOutSize)
-                                          {
-                                              OutputUpdated.Invoke(_outWatchTask,
-                                                                   new LogDiffEventArgs(_outputLog.Reverse().Take(currentLength - _lastOutSize).Reverse()));
-
-                                              _lastOutSize = currentLength;
-                                          }
-                                          Thread.Sleep(TIME_BETWEEN_CONSOLE_OUTPUT_UPDATES);
-                                      }
-                                  };
-            _outWatchExcHandler = (t) =>
-                                      {
-                                          if (t.Exception == null)
-                                              return;
-
-                                          Instance.WriteError(
-                                              string.Format(
-                                                  "!!!\tException raised in Output Watch Task\t!!!\n{0}",
-                                                  t.Exception.InnerException.Message));
-                                      };
-            _errWatchAction = () =>
-                                  {
-                                      while (IsConsoleErrorWatchingEnabled)
-                                      {
-                                          Task.Factory.CancellationToken.ThrowIfCancellationRequested();
-
-                                          int currentLength = _errorLog.Count;
-                                          if (ErrorUpdated != null && currentLength != _lastErrSize)
-                                          {
-                                                ErrorUpdated.Invoke(_errWatchTask,
-                                                                    new LogDiffEventArgs(_errorLog.Reverse().Take(currentLength - _lastOutSize).Reverse()));
-                                              
-                                              _lastErrSize = currentLength;
-                                          }
-                                          Thread.Sleep(TIME_BETWEEN_CONSOLE_OUTPUT_UPDATES);
-                                      }
-                                  };
-            _errWatchExcHandler = (t) =>
-                                      {
-                                          if (t.Exception == null)
-                                              return;
-
-                                          Instance.WriteError(
-                                              string.Format(
-                                                  "!!!\tException raised in Error Watch Task\t!!!{0}",
-                                                  t.Exception.InnerException.Message));
-                                      };
-
-            //StartWatching();
         }
 
         public static IRE Instance
@@ -137,7 +79,8 @@ namespace IREngine
 
         #region Consts
 
-        public readonly int TIME_BETWEEN_CONSOLE_OUTPUT_UPDATES = 1000;
+        // Pause in seconds between log updates
+        public readonly double LOG_UPDATES_PAUSE = 1.0;
         public readonly int MAX_OUTPUT_STREAM_SIZE = 10*1024*1024;
         public readonly int MAX_ERROR_STREAM_SIZE = 10*1024*1024;
 
@@ -145,30 +88,16 @@ namespace IREngine
 
         #region Fields
 
-        private Dictionary<Guid, TaskRecord> _tasks = new Dictionary<Guid, TaskRecord>();
+        private readonly Dictionary<Guid, TaskRecord> _tasks = new Dictionary<Guid, TaskRecord>();
 
-        private bool _outWatchEnabled;
-        private bool _errWatchEnabled;
         private readonly ScriptEngine _defaultEngine;
 
         private readonly MemoryStream _outStream;
-        private Task _outWatchTask;
-        private readonly CancellationTokenSource _outWatchTaskToken = new CancellationTokenSource();
-        private int _lastOutSize = 0;
         private readonly MemoryStream _errStream;
-        private Task _errWatchTask;
-        private readonly CancellationTokenSource _errWatchTaskToken = new CancellationTokenSource();
-        private int _lastErrSize = 0;
 
         private readonly ConcurrentQueue<string> _outputLog = new ConcurrentQueue<string>();
         private readonly ConcurrentQueue<string> _errorLog = new ConcurrentQueue<string>();
 
-        private readonly Action _outWatchAction;
-        private readonly Action<Task> _outWatchExcHandler;
-        private readonly Action _errWatchAction;
-        private readonly Action<Task> _errWatchExcHandler;
-
-        private readonly CancellationTokenSource _scriptsToken = new CancellationTokenSource();
         #endregion
 
         #region Properties
@@ -183,6 +112,16 @@ namespace IREngine
                 {
                     return _defaultEngine;
                 }
+            }
+        }
+
+        public string[] FullOutLog
+        {
+            get
+            {
+                var buffer = new string[_outputLog.Count];
+                _outputLog.CopyTo(buffer,0);
+                return buffer;
             }
         }
 
@@ -201,34 +140,6 @@ namespace IREngine
                 return _errorLog.Reverse().Take(LogsTailLength).Reverse();
             }
         }
-
-        public bool IsConsoleOutputWatchingEnabled
-        {
-            get
-            {
-                return _outWatchEnabled;
-            }
-            set
-            {
-                _outWatchEnabled = value;
-            }
-        }
-
-        public bool IsConsoleErrorWatchingEnabled
-        {
-            get
-            {
-                return _errWatchEnabled;
-            }
-            set
-            {
-                _errWatchEnabled = value;
-            }
-        }
-
-        public event EventHandler<LogDiffEventArgs> OutputUpdated;
-        public event EventHandler<LogDiffEventArgs> ErrorUpdated;
-        private Guid _instanceId;
 
         #endregion
 
@@ -262,28 +173,6 @@ namespace IREngine
             {
                 _errorLog.Enqueue(line);
             }
-        }
-
-        public void StartWatching()
-        {
-            StopWatching();
-            if (_outWatchTask != null)
-                _outWatchTask.Wait();
-
-            if (_errWatchTask != null)
-                _errWatchTask.Wait();
-            
-            IsConsoleOutputWatchingEnabled = IsConsoleErrorWatchingEnabled = true;
-
-            _outWatchTask = Task.Factory.StartNew(_outWatchAction, _outWatchTaskToken.Token);
-            _outWatchTask.ContinueWith(_outWatchExcHandler, TaskContinuationOptions.OnlyOnFaulted);
-            _errWatchTask = Task.Factory.StartNew(_errWatchAction, _errWatchTaskToken.Token);
-            _errWatchTask.ContinueWith(_errWatchExcHandler, TaskContinuationOptions.OnlyOnFaulted);
-        }
-
-        public void StopWatching()
-        {
-            IsConsoleOutputWatchingEnabled = IsConsoleErrorWatchingEnabled = false;
         }
 
         public Guid RunScriptAsync(string code)
@@ -324,10 +213,7 @@ namespace IREngine
                                                                  return true;
                                                              });
                                   }, TaskContinuationOptions.OnlyOnFaulted);
-            task.ContinueWith((t) =>
-                                {
-                                    Instance.RemoveTask(guid);
-                                });
+            task.ContinueWith((t) => Instance.RemoveTask(guid));
             return guid;
         }
 

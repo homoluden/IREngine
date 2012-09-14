@@ -25,16 +25,19 @@ namespace IREngineTestBed
     public partial class MainWindow : Window
     {
         #region Consts
-        
+
+        // Time in milliseconds between log update
+        private const double LOG_UPDATE_PERIOD_MS = 100.0;
         #endregion
 
         #region Fields
 
-        private DispatcherTimer _logUpdateTimer;
+        private readonly DispatcherTimer _logUpdateTimer;
+
+        private readonly TaskScheduler _uiScheduler;
+        private Guid _taskKey;
 
         #endregion
-
-        private TaskScheduler _uiScheduler;
 
         public MainWindow()
         {
@@ -42,131 +45,82 @@ namespace IREngineTestBed
 
             _uiScheduler = TaskScheduler.FromCurrentSynchronizationContext();
 
-            _logUpdateTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(100.0), IsEnabled = false };
-            _logUpdateTimer.Tick += new EventHandler(_logUpdateTimer_Tick);
-            IRE.Instance.OutputUpdated += OnOutputUpdated;
-            IRE.Instance.ErrorUpdated += OnErrorUpdated;
-
+            _logUpdateTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(LOG_UPDATE_PERIOD_MS), IsEnabled = false };
+            _logUpdateTimer.Tick += _logUpdateTimer_Tick;
         }
-        private void OnOutputUpdated(object s, LogDiffEventArgs args)
-        {
-            var uiUpdateTask = Task.Factory.StartNew(() =>
-            {
-                if (TimerWatcherSelector.IsChecked == true)
-                    return;
-
-                foreach (var line in args.AddedLines)
-                {
-                    OutputLogBox.Items.Add(line);
-                    if (OutputLogBox.Items.Count >= IRE.Instance.LogsTailLength)
-                    {
-                        //OutputLogBox.Items.RemoveAt(0);
-                    }
-
-                    OutputLogBox.ScrollIntoView(line);
-                }
-            },
-                     Task.Factory.CancellationToken,
-                     TaskCreationOptions.None,
-                     _uiScheduler);
-            uiUpdateTask.Wait();
-        }
-        private void OnErrorUpdated(object s, LogDiffEventArgs args)
-        {
-            if (TimerWatcherSelector.IsChecked == true)
-                return;
-
-            var uiUpdateTask = Task.Factory.StartNew(() =>
-            {
-                foreach (var line in args.AddedLines)
-                {
-                    ErrorLogBox.Items.Add(line);
-                    if (ErrorLogBox.Items.Count >= IRE.Instance.LogsTailLength)
-                    {
-                        ErrorLogBox.Items.RemoveAt(0);
-                    }
-
-                    ErrorLogBox.ScrollIntoView(line);
-                }
-            },
-                Task.Factory.CancellationToken,
-                TaskCreationOptions.None,
-                _uiScheduler);
-            uiUpdateTask.Wait();
-        }
+        
         void _logUpdateTimer_Tick(object sender, EventArgs e)
         {
-            if (TimerWatcherSelector.IsChecked != true)
+            if (WatchTimerSwitch.IsChecked != true)
                 return;
             
-            OutputLogBox.Items.Clear();
-            foreach (var line in IRE.Instance.OutLogTail)
-	        {
-                OutputLogBox.Items.Add(line);
-	        }
-
-            if (OutputLogBox.Items.Count > 0)
+            var logTail = IRE.Instance.OutLogTail.ToList();
+            if (logTail.Count > 0)
             {
-                OutputLogBox.ScrollIntoView(OutputLogBox.Items[OutputLogBox.Items.Count - 1]);
+                OutputLogBox.Items.Clear();
+                foreach (var line in logTail)
+	            {
+                    OutputLogBox.Items.Add(line);
+	            }
+
+                if (OutputLogBox.Items.Count > 0)
+                {
+                    OutputLogBox.ScrollIntoView(OutputLogBox.Items[OutputLogBox.Items.Count - 1]);
+                }
             }
-
-
-            ErrorLogBox.Items.Clear();
-            foreach (var line in IRE.Instance.ErrLogTail)
+            
+            logTail = IRE.Instance.ErrLogTail.ToList();
+            if (logTail.Count == 0)
             {
-                ErrorLogBox.Items.Add(line);
+                ErrorLogBox.Items.Clear();
+                foreach (var line in logTail)
+                {
+                    ErrorLogBox.Items.Add(line);
+                }
+
+                if (ErrorLogBox.Items.Count > 0)
+                {
+                    ErrorLogBox.ScrollIntoView(ErrorLogBox.Items[ErrorLogBox.Items.Count - 1]);
+                }       
             }
-
-            if (ErrorLogBox.Items.Count > 0)
-            {
-                ErrorLogBox.ScrollIntoView(ErrorLogBox.Items[ErrorLogBox.Items.Count - 1]);
-            }            
         }
 
         private void StartButton_Click(object sender, RoutedEventArgs e)
         {
-            
-            IRE.Instance.StartWatching();
-            //_logUpdateTimer.Start();
-
             RunExample();
         }
 
         private void RunExample()
         {
-            string code = string.Empty;
+            string code;
             using (var reader = File.OpenText(@"scripts\game\character_test.rb"))
             {
                 code = reader.ReadToEnd();                
             }
 
-            var taskKey = IRE.Instance.RunScriptAsync(code);
+            _taskKey = IRE.Instance.RunScriptAsync(code);
         }
 
         private void StopButton_Click(object sender, RoutedEventArgs e)
         {
-            IRE.Instance.StopWatching();
-
-            //_logUpdateTimer.Stop();
+            IRE.Instance.RequestCancelation(_taskKey);
         }
 
         private void TimerWatcherSelector_Checked(object sender, RoutedEventArgs e)
         {
-            IRE.Instance.OutputUpdated -= OnOutputUpdated;
-            IRE.Instance.ErrorUpdated -= OnErrorUpdated;
-
             _logUpdateTimer.Start();
         }
 
         private void TimerWatcherSelector_Unchecked(object sender, RoutedEventArgs e)
         {
-            IRE.Instance.OutputUpdated -= OnOutputUpdated;
-            IRE.Instance.ErrorUpdated -= OnErrorUpdated;
-
-            IRE.Instance.OutputUpdated += OnOutputUpdated;
-            IRE.Instance.ErrorUpdated += OnErrorUpdated;
-
             _logUpdateTimer.Stop();
+        }
+
+        private void ReadFullLogButtonOnClick(object sender, RoutedEventArgs e)
+        {
+            WatchTimerSwitch.IsChecked = false;
+            OutputLogBox.Items.Clear();
+            OutputLogBox.ItemsSource = IRE.Instance.FullOutLog;
         }
     }
 }
