@@ -81,6 +81,7 @@ class Character
         
         n.times{|i|
             Character.step(state)
+            IRE.log "#{Character.print(state)}"
         }
     end
 
@@ -152,7 +153,7 @@ class Character
         IRE.log "Step end!" if $verbose
     end
     
-    def print
+    def Character.print(state)
         x, y, tx, ty = state[StateVar.XPosition], state[StateVar.YPosition], state[StateVar.XPosTarget], state[StateVar.YPosTarget]
         vx, vy = state[StateVar.XVelocity], state[StateVar.YVelocity]
         

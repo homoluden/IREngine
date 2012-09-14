@@ -119,9 +119,7 @@ namespace IREngine
         {
             get
             {
-                var buffer = new string[_outputLog.Count];
-                _outputLog.CopyTo(buffer,0);
-                return buffer;
+                return _outputLog.ToArray();
             }
         }
 

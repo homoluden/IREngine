@@ -27,7 +27,7 @@ namespace IREngineTestBed
         #region Consts
 
         // Time in milliseconds between log update
-        private const double LOG_UPDATE_PERIOD_MS = 100.0;
+        private const double LOG_UPDATE_PERIOD_MS = 1000.0;
         #endregion
 
         #region Fields
@@ -57,12 +57,8 @@ namespace IREngineTestBed
             var logTail = IRE.Instance.OutLogTail.ToList();
             if (logTail.Count > 0)
             {
-                OutputLogBox.Items.Clear();
-                foreach (var line in logTail)
-	            {
-                    OutputLogBox.Items.Add(line);
-	            }
-
+                OutputLogBox.ItemsSource = logTail;
+                
                 if (OutputLogBox.Items.Count > 0)
                 {
                     OutputLogBox.ScrollIntoView(OutputLogBox.Items[OutputLogBox.Items.Count - 1]);
@@ -72,12 +68,8 @@ namespace IREngineTestBed
             logTail = IRE.Instance.ErrLogTail.ToList();
             if (logTail.Count > 0)
             {
-                ErrorLogBox.Items.Clear();
-                foreach (var line in logTail)
-                {
-                    ErrorLogBox.Items.Add(line);
-                }
-
+                ErrorLogBox.ItemsSource = logTail;
+                
                 if (ErrorLogBox.Items.Count > 0)
                 {
                     ErrorLogBox.ScrollIntoView(ErrorLogBox.Items[ErrorLogBox.Items.Count - 1]);
@@ -119,7 +111,6 @@ namespace IREngineTestBed
         private void ReadFullLogButtonOnClick(object sender, RoutedEventArgs e)
         {
             WatchTimerSwitch.IsChecked = false;
-            OutputLogBox.Items.Clear();
             OutputLogBox.ItemsSource = IRE.Instance.FullOutLog;
         }
     }
