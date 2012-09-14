@@ -70,11 +70,12 @@ class Character
 
     def Character.update(state, time_delta)
         ts = state[StateVar.TimeSample]
-        if time_delta < ts
+        rem = state[StateVar.TimeRemainder]
+        state[StateVar.TimeRemainder] = t = rem + time_delta
+        if t < ts
             return
         end
-        
-        t = state[StateVar.TimeRemainder] + time_delta
+                
         n, rem = t.divmod ts
         state[StateVar.TimeRemainder] = rem
         

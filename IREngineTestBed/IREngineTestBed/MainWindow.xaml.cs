@@ -70,7 +70,7 @@ namespace IREngineTestBed
             }
             
             logTail = IRE.Instance.ErrLogTail.ToList();
-            if (logTail.Count == 0)
+            if (logTail.Count > 0)
             {
                 ErrorLogBox.Items.Clear();
                 foreach (var line in logTail)
