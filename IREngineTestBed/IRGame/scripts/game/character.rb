@@ -79,6 +79,7 @@ class Character
         n, rem = t.divmod ts
         state[StateVar.TimeRemainder] = rem
         
+        IRE.log "\nTime Delta: #{time_delta}; Iterations Count: #{n}\n\n"
         n.times{|i|
             Character.step(state)
             IRE.log "#{Character.print(state)}"

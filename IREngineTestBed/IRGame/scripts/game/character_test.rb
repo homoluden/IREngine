@@ -21,11 +21,11 @@ time = 0.0
 last = Environment.tick_count
 50000.times{|i|
     curr = Environment.tick_count
-    delta = curr - last
-    time += delta * 0.001
+    delta = (curr - last) * 0.001
+    time += delta
     IRE.log "Time: #{time}"
     Character.update(ch.state, delta)
     
     last = curr
-    sleep 0.0
+    sleep ts
 }
